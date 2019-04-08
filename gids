@@ -1,0 +1,9 @@
+#!/bin/bash
+
+IDs=$(
+curl https://api.schoology.com/v1/users/25493325/sections \
+	-H "authorization: `php -f /Users/nathaniel/Desktop/2legOAuthGenerator.php`" | \
+	jq -r .section[].id
+)
+
+echo $IDs

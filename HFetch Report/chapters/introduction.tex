@@ -1,0 +1,17 @@
+Schoology is a learning management system (LMS), a website on which teachers can post assignments and resources for their students to access anywhere.\cite{scgy-promo}
+Navigating to Schoology is inconvenient,
+	and once on the site,
+	all that is usually needed is the sidebar,
+	which lists upcoming assignments.
+It can be hard to remember to check Schoology,
+	so an automated utility is extremely useful.
+Because of this,
+	a Unix shell script\cite{getassgns} was written which fetches assignments from the website,
+	and an AppleScript App which displays the assignment information in a user-friendly GUI.
+Bash and AppleScript, a MacOS scripting language, were chosen for this task because they integrate well and both run on MacOS,
+	as the school that HFetch is intended for has an abundance of Macs.
+
+Schoology has a RESTful API in order to allow for the creation of tools to enrich the Schoology experience.\cite{api-docs}
+REST is a standard for web services which allows for the access and manipulation of web resources
+	by way of a set of stateless,
+	(each message is independent of the others) predefined operations.\cite{rest}

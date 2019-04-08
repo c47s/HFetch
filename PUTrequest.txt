@@ -1,0 +1,12 @@
+PUT /v1/users/5 HTTP/1.1
+Host: api.schoology.com
+Accept: text/xml;q=1.0,application/json;q=0.0;application/php;q=0.0
+Host: api.schoology.com
+Content-Type: text/xml
+Content-Length: 95
+Authorization: OAuth realm="Schoology API", oauth_consumer_key="5467f791b6951746aec7d75bd2db99a505a6c8a3c", oauth_token="", oauth_nonce="5a764109e5477", oauth_timestamp="1517699337", oauth_signature_method="PLAINTEXT", oauth_version="1.0", oauth_signature="7919313657d4e63ad4899db2185ddbfc%26"
+
+<?xml version="1.0" encoding="utf-8" ?>
+<result>
+  <name_title>Professor</name_title>
+</result>

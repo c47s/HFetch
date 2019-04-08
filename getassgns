@@ -1,0 +1,128 @@
+#!/bin/bash
+
+interactive=1
+justDoCredentials=0
+tty=$(tty)
+
+while getopts "gret:" opt; do
+	case "$opt" in
+		g)
+		interactive=0
+		tty="/dev/null"
+		;;
+		r)
+		rm "$HOME/.scgyKey"
+		rm "$HOME/.scgySecret"
+		;;
+		e)
+		justDoCredentials=1
+		;;
+		t)
+		tty="$OPTARG"
+		;;
+		*)
+		echo "usage: $0 [-ire] [-t tty]"
+		;;
+	esac
+done
+
+
+
+PATH=$PATH":/usr/local/bin/"
+jq --help > /dev/null 2> /dev/null || {
+	echo "Coulndn't find jq." > /dev/stderr
+	if [ $interactive -eq 1 ]; then
+		echo "Install it?"
+		echo -n "(yes or no?) "
+		read -n 1 answer
+		read
+
+		if [ "$answer" != "y" ]; then
+			exit 5
+		fi
+		brew install jq || \
+		pkg install jq || \
+		sudo bash -c '
+			apt-get install jq ||
+			dnf install jq ||
+			zypper install jq ||
+			pacman -Sy jq'
+	else
+		exit 4
+	fi
+}
+
+
+
+read consumerKey < "$HOME/.scgyKey" || \
+{ echo -n "Consumer Key: " > "$tty"; read -t 5 && echo "$REPLY" > "$HOME/.scgyKey" || exit 2; }
+
+read consumerSecret < "$HOME/.scgySecret" || \
+{ echo -n "Consumer Secret: " > "$tty"; read -t 5 && echo "$REPLY" > "$HOME/.scgySecret" || exit 3; }
+
+[ $justDoCredentials -eq 1 ] && exit
+
+IDs=( $(
+curl https://api.schoology.com/v1/users/25493325/sections \
+	-sH "$(php -r "echo 'authorization: OAuth realm=\"Schoology API\", oauth_consumer_key=\"$consumerKey\", oauth_token=\"\", oauth_nonce=\"'; echo uniqid(); echo '\", oauth_timestamp=\"'; echo time(); echo '\", oauth_signature_method=\"PLAINTEXT\", oauth_version=\"1.0\", oauth_signature=\"$consumerSecret%26\"'; ")"\
+ | jq -r .section[].id
+) )
+
+length=${#IDs[@]}
+
+[ $interactive -eq 1 ] && tput sc > "$tty"
+
+result=$(
+
+for i in "${!IDs[@]}"; do
+
+	[ $interactive -eq 1 ] && tput rc > "$tty"
+	echo -n $((i * 100 / length))"%" > "$tty"
+
+	until curl https://api.schoology.com/v1/sections/"${IDs[$i]}"/assignments \
+-sfH "$(php -r "echo 'authorization: OAuth realm=\"Schoology API\", oauth_consumer_key=\"$consumerKey\", oauth_token=\"\", oauth_nonce=\"'; echo uniqid(); echo '\", oauth_timestamp=\"'; echo time(); echo '\", oauth_signature_method=\"PLAINTEXT\", oauth_version=\"1.0\", oauth_signature=\"$consumerSecret%26\"'; ")"
+	do
+		sleep 0.1
+	done
+
+done
+
+)
+
+if [ $interactive -eq 1 ]; then
+
+	tput rc > "$tty"
+
+	{
+	echo "Name\`Due Date"
+	echo "$result" | jq -r '.assignment[] |
+	select(
+	(.due | strptime("%Y-%m-%d %H:%M:%S") | mktime)? > ($date | strptime("%Y-%m-%d %H:%M:%S") | mktime)
+	)
+	|
+	"\(.due):: \(.title):`\(.due)"' --arg date "$(date +"%C%y-%m-$(($(date +%d))) %H:%M:%S")"
+	} | column -ts "\`" > "$tty"
+
+else
+
+	result=$(
+		echo "$result" | jq -r '.assignment[] |
+		select(
+		(.due | strptime("%Y-%m-%d %H:%M:%S") | mktime)? > ($date | strptime("%Y-%m-%d %H:%M:%S") | mktime)
+		)
+		|
+		"Due \(.due):: \(.title), URL \(.web_url)"' --arg date "$(date +"%C%y-%m-$(($(date +%d))) %H:%M:%S")" | sort
+		# --arg date "2000-01-01 00:00:00
+	)
+
+	tempIFS="$IFS"
+	IFS='
+	'
+
+	for line in $result; do
+		echo "${line#*:: *}"
+	done
+
+	IFS="$tempIFS"
+
+fi

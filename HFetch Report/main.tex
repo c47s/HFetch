@@ -1,0 +1,57 @@
+\documentclass[twoside,a4paper,12pt]{report}
+\usepackage[utf8]{inputenc}
+
+\usepackage[style=numeric,backend=biber]{biblatex}
+\bibliography{bibliography}
+
+\usepackage{listings}
+\lstset{language=bash}
+
+\usepackage{appendix}
+
+\title{HFetch: A User-Friendly API Client for the Schoology LMS}
+\author{Nathaniel Waterman}
+\date{March 3, 2018}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Schoology is popular and powerful, but it takes time to check for homework posted there.
+This was the reason for designing HFetch,
+	which uses a RESTful API to fetch, display, and provide details about
+	assignments from Schoology in 2 clicks, or 1 if it is launched automatically.
+
+The introduction to Schoology's API documentation mentions that there were no Schoology API clients at the time it was written, but an implementation in Java was found on GitHub (rvanasa/schoology-api).
+This paper intends to inform the reader about HFetch, seemingly the second such API client.
+\end{abstract}
+
+\tableofcontents
+
+\chapter{Introduction}
+\input {chapters/introduction}
+
+\chapter{Problem}
+\input{chapters/problem}
+
+\chapter{Solution}
+\input{chapters/solution}
+\section{System Model}
+\input{chapters/system-model}
+
+\chapter{Technical Challenges}
+\input{chapters/technical-challenges}
+
+\chapter{Conclusions}
+\input{chapters/conclusions}
+
+\printbibliography
+
+\appendix
+\appendixpage
+\addappheadtotoc
+\chapter{Shell Script (getassgns)}
+\input{chapters/getassgns}
+
+\end{document}

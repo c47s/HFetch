@@ -1,0 +1,133 @@
+#!/bin/bash
+
+interactive=1
+justDoCredentials=0
+tty=$(tty) # tty to direct interactive output to
+
+while getopts "gret:" opt; do
+	case "$opt" in
+		g) # GUI mode - non-interactive
+		interactive=0
+		tty="/dev/null"
+		;;
+		r) # Delete the API credential files
+		rm "$HOME/.scgyKey"
+		rm "$HOME/.scgySecret"
+		;;
+		e) # Exit after modifying credentials
+		justDoCredentials=1
+		;;
+		t) # Specify tty for interactive output
+		tty="$OPTARG"
+		;;
+		*) # Invalid option
+		echo "usage: $0 [-gre] [-t tty]"
+		;;
+	esac
+done
+
+
+
+PATH=$PATH":/usr/local/bin/" # Make sure we can find jq if it is installed
+jq --help > /dev/null 2> /dev/null || { # Test if we can find jq
+	echo "Coulndn't find jq." > /dev/stderr
+	if [ $interactive -eq 1 ]; then
+		echo "Install it?"
+		echo -n "(yes or no?) "
+		read -n 1 answer
+		read
+
+		if [ "$answer" != "y" ]; then # If the user does not type something beginning with y
+			exit 5
+		fi
+		brew install jq || \
+		pkg install jq || \
+		sudo bash -c '
+			apt-get install jq ||
+			dnf install jq ||
+			zypper install jq ||
+			pacman -Sy jq' # Try every possible way to install jq
+	else
+		exit 4 # 4 - The GUI needs to install jq
+	fi
+}
+
+# Try to read the credentials. If they are missing, prompt the user. If the user doesn't respond (or we're in GUI mode), exit with an error
+
+read consumerKey < "$HOME/.scgyKey" || \
+{ echo -n "Consumer Key: " > "$tty"; read -t 5 && echo "$REPLY" > "$HOME/.scgyKey" || exit 2; } # 2 - Missing Consumer Key
+
+read consumerSecret < "$HOME/.scgySecret" || \
+{ echo -n "Consumer Secret: " > "$tty"; read -t 5 && echo "$REPLY" > "$HOME/.scgySecret" || exit 3; } # 3 - Missing Consumer Secret
+
+[ $justDoCredentials -eq 1 ] && exit # Stop if option -e (exit after modifying credentials) was specified
+
+IDs=( $(
+curl https://api.schoology.com/v1/users/25493325/sections \
+	-sH "$(php -r "echo 'authorization: OAuth realm=\"Schoology API\", oauth_consumer_key=\"$consumerKey\", oauth_token=\"\", oauth_nonce=\"'; echo uniqid(); echo '\", oauth_timestamp=\"'; echo time(); echo '\", oauth_signature_method=\"PLAINTEXT\", oauth_version=\"1.0\", oauth_signature=\"$consumerSecret%26\"'; ")"\
+ | jq -r .section[].id
+) ) # Obtain the IDs of the user's classes
+
+length=${#IDs[@]} # Find how many classes the user has
+
+[ $interactive -eq 1 ] && tput sc > "$tty" # If we're in interactive mode, save the current cursor position so we can return here in order to overwrite the previous progress percentage
+
+result=$(
+
+for i in "${!IDs[@]}"; do
+
+	[ $interactive -eq 1 ] && tput rc > "$tty"
+	echo -n $((i * 100 / length))"%" > "$tty" # Display progress percentage
+
+	# Get each class' assignments
+	until curl https://api.schoology.com/v1/sections/"${IDs[$i]}"/assignments \
+-sfH "$(php -r "echo 'authorization: OAuth realm=\"Schoology API\", oauth_consumer_key=\"$consumerKey\", oauth_token=\"\", oauth_nonce=\"'; echo uniqid(); echo '\", oauth_timestamp=\"'; echo time(); echo '\", oauth_signature_method=\"PLAINTEXT\", oauth_version=\"1.0\", oauth_signature=\"$consumerSecret%26\"'; ")"
+	do
+		sleep 0.1
+	done
+
+done
+
+)
+
+if [ $interactive -eq 1 ]; then
+
+	tput rc > "$tty"
+
+	{
+	echo "Name\`Due Date"
+
+	# Parse the json returned by the server for the due date and name, keeping only ones that are due in the future
+ 	echo "$result" | jq -r '.assignment[] |
+	select(
+	(.due | strptime("%Y-%m-%d %H:%M:%S") | mktime)? > ($date | strptime("%Y-%m-%d %H:%M:%S") | mktime)
+	)
+	|
+	"\(.title):`\(.due)"' --arg date "$(date +"%C%y-%m-$(($(date +%d))) %H:%M:%S")"
+	} | column -ts "\`" > "$tty"
+
+else
+
+	# Parse the json returned by the server for the due date and name, keeping only ones that are due in the future
+	result=$(
+		echo "$result" | jq -r '.assignment[] |
+		select(
+		(.due | strptime("%Y-%m-%d %H:%M:%S") | mktime)? > ($date | strptime("%Y-%m-%d %H:%M:%S") | mktime)
+		)
+		|
+		"Due \(.due):: \"\(.title)\": due \(.due), URL \(.web_url)"' --arg date "$(date +"%C%y-%m-$(($(date +%d))) %H:%M:%S")" | sort
+		# --arg date "2000-01-01 00:00:00
+	)
+
+	# Sort the assignments by due date
+	tempIFS="$IFS"
+	IFS='
+'
+
+	for line in $result; do
+		echo "${line#*:: *}"
+	done
+
+	IFS="$tempIFS"
+
+fi

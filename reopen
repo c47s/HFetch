@@ -1,0 +1,6 @@
+#!/bin/bash
+open /Users/nathaniel/Desktop/API\ Stuff.txt
+open /Users/nathaniel/Desktop/References.txt
+open https://developers.schoology.com/api-documentation/rest-api-v1
+open /Applications/arc.app
+open /Applications/iTerm.app

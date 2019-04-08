@@ -1,0 +1,5 @@
+Current Consumer Key:
+5467f791b6951746aec7d75bd2db99a505a6c8a3c
+
+Current Consumer Secret:
+7919313657d4e63ad4899db2185ddbfc

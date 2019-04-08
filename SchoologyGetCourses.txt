@@ -1,0 +1,6 @@
+GET /v1/users/25493325/sections HTTP/1.1
+Host: api.schoology.com
+Accept: text/xml;q=1.0,application/json;q=0.0;application/php;q=0.0
+Content-Type: application/json
+Authorization: OAuth realm="Schoology API", oauth_consumer_key="5467f791b6951746aec7d75bd2db99a505a6c8a3c", oauth_token="", oauth_nonce="5a7f7105834e0", oauth_timestamp="1518301445", oauth_signature_method="PLAINTEXT", oauth_version="1.0", oauth_signature="7919313657d4e63ad4899db2185ddbfc%26"
+

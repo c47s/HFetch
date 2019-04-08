@@ -1,0 +1,15 @@
+o = Done
+
+* Increase flowchart resolution
+* getassgns seems to only get 1 assignment
+* Elaborate
+	- What things are
+	- Why chose things (over other things)
+	- More from notebook
+		o Homebrew challenge
+o Do an about button
+o Add github of getassgns to poster
+o Add powerschool api & iPhone to conclusions
+o Add code to appendix
+o Commentify code
+o Fix citations

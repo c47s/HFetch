@@ -1,0 +1,12 @@
+HFetch is the solution to the aforementioned problem of forgotten homework.
+It runs a shell script which downloads course information,
+	then uses this to determine the IDs of the courses
+	and goes on to query the server as to the assignments in each of these courses.
+Once the assignments have been obtained,
+	the script passes them on to HFetch to be displayed and exits.
+If, however jq\cite{jq}, a JSON parser, isn't installed or the files storing the user's API credentials are missing, 
+	the shell script returns an error which HFetch identifies and leads the user through the installation of jq
+	and possibly the package manager Homebrew,
+	or the obtaining and entry of their credentials,
+	passing these to the shell script,
+	which saves them on the disk.

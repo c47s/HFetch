@@ -1,0 +1,6 @@
+A few lessons were learned while designing HFetch:
+
+When testing the shell script, it was discovered that requests to the server must be sent with increments of at least 1 second, as the PHP time() function returns the time in seconds, not milliseconds.
+Also, OAuth was found to be uncompromising in security - when the API credentials on disk became corrupted (somehow), jq\cite{jq} failed to parse the server's responses due to them being error messages instead of JSON. It took much troubleshooting to find that the root of the problem was not jq at all, but a credential issue.
+The shell script uses jq to parse the JSON from the API, but since jq is not installed by default on MacOS, it had to be installed during setup.
+However, as MacOS does not have a package manager, the package manager Homebrew had to be installed in order to install jq!

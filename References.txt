@@ -1,0 +1,18 @@
+1 https://developers.schoology.com/api-documentation/design-architecture
+2 https://www.telerik.com/download/fiddler/fiddler-osx-beta
+3 https://www.telerik.com/blogs/introducing-fiddler-for-os-x-beta-1
+4 http://www.mono-project.com/download/
+5 https://superuser.com/
+6 https://www.charlesproxy.com/download/previous-release/
+7 https://www.charlesproxy.com/documentation/
+8 https://app.schoology.com/login?destination=
+9 2legOAuthGenerator.php
+10 https://api.schoology.com/v1/users/5
+11 SchoologyGetMessages.txt
+12 https://install.advancedrestclient.com/
+13 SchoologyGetCourses.txt
+14 https://developers.schoology.com/api-documentation/rest-api-v1
+15 gids
+16 getassgns
+17 Getassgns AppleScript Wrapper.scpt
+18 HFetch.app
